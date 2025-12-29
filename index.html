@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Frame Counter</title>
+  <style>
+    body {
+      background: white;
+      color: black;
+      font-family: arial;
+      text-align: center;
+      margin: 0;
+      padding-top: 5%;
+    }
+    /* Clock styles */
+    #clock {
+      width: 200px;
+      height: 200px;
+      border: 5px solid black;
+      border-radius: 50%;
+      position: relative;
+      margin: 0 auto 40px auto;
+    }
+    #hand {
+      width: 4px;
+      height: 95px;
+      background: #B8D330;
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: rotate(0deg);
+    }
+    #frameCounter {
+      font-size: 8em;
+      color: #008AAB;
+      margin-bottom: 30px;
+    }
+    #stopwatch {
+      font-size: 8em;
+      color: #B92454;
+      margin-bottom: 30px;
+    }
+    /* Round flat buttons */
+    .button {
+      width: 200px;
+      height: 200px;
+      font-size: 3em;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #toggleBtn {
+      background-color: #008AAB;
+      left: 320px;
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    #resetBtn {
+      background-color: #B92454;
+      right: 320px;
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <!-- Analog Clock -->
+  <div id="clock">
+    <div id="hand"></div>
+  </div>
+
+  <!-- Frame Counter -->
+  <div id="frameCounter">0</div>
+
+  <!-- Stopwatch -->
+  <div id="stopwatch">0.000</div>
+
+  <!-- Buttons fixed on sides -->
+  <button class="button" id="toggleBtn" onclick="toggle()">Start</button>
+  <button class="button" id="resetBtn" onclick="reset()">Reset</button>
+
+  <script>
+    let startTime = 0;
+    let elapsed = 0;
+    let frameCount = 0;
+    let running = false;
+
+function formatTime(msTotal) {
+  let totalSeconds = msTotal / 1000;
+  let hours = Math.floor(totalSeconds / 3600);
+  let minutes = Math.floor((totalSeconds % 3600) / 60);
+  let seconds = Math.floor(totalSeconds % 60);
+  let milliseconds = Math.floor(msTotal % 1000);
+
+  let msStr = milliseconds.toString().padStart(3, "0");
+
+  if (hours > 0) {
+    // show hours, minutes, seconds
+    let mStr = (minutes < 10 ? "0" : "") + minutes + ":";
+    let sStr = (seconds < 10 ? "0" : "") + seconds + ".";
+    return hours + ":" + mStr + sStr + msStr;
+  } else if (minutes > 0) {
+    // show minutes, seconds
+    let sStr = (seconds < 10 ? "0" : "") + seconds + ".";
+    return minutes + ":" + sStr + msStr;
+  } else {
+    // show only seconds.milliseconds
+    return seconds + "." + msStr;
+  }
+}
+
+    function formatNumberWithCommas(num) {
+      return num.toLocaleString();
+    }
+
+    function update() {
+      if (running) {
+        const now = performance.now();
+        const currentElapsed = elapsed + (now - startTime);
+
+        // Update stopwatch
+        document.getElementById('stopwatch').textContent = formatTime(currentElapsed);
+
+        // Update frame counter
+        frameCount++;
+        document.getElementById("frameCounter").textContent = formatNumberWithCommas(frameCount);
+
+        // Clock hand rotation: 1 revolution per second
+        const msInSecond = currentElapsed % 1000;
+        const rotation = (msInSecond / 1000) * 360;
+        document.getElementById('hand').style.transform = `rotate(${rotation}deg)`;
+      }
+      requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+
+    function toggle() {
+      if (!running) {
+        startTime = performance.now();
+        running = true;
+        document.getElementById('toggleBtn').textContent = "Stop";
+      } else {
+        elapsed += performance.now() - startTime;
+        running = false;
+        document.getElementById('toggleBtn').textContent = "Start";
+      }
+    }
+
+    function reset() {
+      running = false;
+      startTime = 0;
+      elapsed = 0;
+      frameCount = 0;
+      document.getElementById('stopwatch').textContent = "0.000";
+      document.getElementById("frameCounter").textContent = "0";
+      document.getElementById('toggleBtn').textContent = "Start";
+      document.getElementById('hand').style.transform = "rotate(0deg)";
+    }
+  </script>
+</body>
+</html>
